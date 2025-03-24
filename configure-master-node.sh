@@ -27,7 +27,7 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 echo "[7.2] Configuring kubectl for vagrant user..."
 mkdir -p /home/vagrant/.kube
 sudo cp -f /etc/kubernetes/admin.conf /home/vagrant/.kube/config
-sudo chown 900:900 /home/vagrant/.kube/config
+sudo chown vagrant:vagrant /home/vagrant/.kube/config
 }
 
 install_network_cni ()

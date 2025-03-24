@@ -2,22 +2,32 @@
 # vi: set ft=ruby :
 
 IMAGE_NAME = "bento/ubuntu-24.04"
-MASTER_IP = "192.168.56.30"
-NODE_01_IP = "192.168.56.31"
+PUBLIC_MASTER_IP = "192.168.1.100"
+PUBLIC_NODE_01_IP = "192.168.1.101"
+
+PRIVATE_MASTER_IP = "192.168.56.30"
+PRIVATE_NODE_01_IP = "192.168.56.31"
 
 Vagrant.configure("2") do |config|
   config.vm.box = IMAGE_NAME
 
   boxes = [
-    { :name => "master",  :ip => MASTER_IP,  :cpus => 2, :memory => 2048 },
-    { :name => "node-01", :ip => NODE_01_IP, :cpus => 1, :memory => 2048 },
+    { :name => "master",  :ippublic => PUBLIC_MASTER_IP, :ipprivate => PRIVATE_MASTER_IP, :cpus => 2, :memory => 2048 },
+    { :name => "node-01", :ippublic => PUBLIC_NODE_01_IP, :ipprivate => PRIVATE_NODE_01_IP, :cpus => 1, :memory => 2048 },
   ]
 
   boxes.each do |opts|
     config.vm.define opts[:name] do |box|
       box.vm.hostname = opts[:name]
-      box.vm.network :private_network, ip: opts[:ip]
+      box.vm.network :private_network, ip: opts[:ipprivate]
+      box.vm.network :public_network, ip: opts[:ippublic], bridge: "en0"
+
+      # Port forwarding for access to the Kubernetes API from outside
+      if opts[:name] == "master"
+        box.vm.network "forwarded_port", guest: 6443, host: 6443  # API Kubernetes
+      end
       box.vm.provider "virtualbox" do |vb|
+        vb.name = opts[:name]
         vb.cpus = opts[:cpus]
         vb.memory = opts[:memory]
       end
@@ -32,47 +42,5 @@ Vagrant.configure("2") do |config|
     end
   end
 end
-
-# NODE_IP = "192.168.56.3"
-# Vagrant.configure("2") do |config|
-#   # master server
-#   config.vm.define "master" do |master|
-#     master.vm.box = IMAGE_NAME
-#     master.vm.hostname = "Master"
-#     master.vm.network "public_network", ip: MASTER_IP
-#     master.vm.provider :virtualbox do |v|
-#       v.name = "master"
-#       v.memory = 2048
-#       v.cpus = 2
-#     end
-#     config.vm.provision "shell", inline: <<-SHELL
-#       sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config    
-#       service ssh restart
-#     SHELL
-#     master.vm.provision "shell", path: "install_common.sh"
-#     master.vm.provision "shell", path:"configure-master-node.sh"
-#   end
-
-  # numberSrv=2
-  # # workers server
-  # (1..numberSrv).each do |i|
-  #   config.vm.define "node#{i}" do |node|
-  #     node.vm.box = IMAGE_NAME
-  #     node.vm.hostname = "node#{i}"
-  #     node.vm.network "public_network", ip: "#{NODE_IP}#{i}"
-  #     node.vm.provider "virtualbox" do |v|
-  #       v.name = "node#{i}"
-  #       v.memory = 2048
-  #       v.cpus = 1
-  #     end
-  #     config.vm.provision "shell", inline: <<-SHELL
-  #       sed -i 's/ChallengeResponseAuthentication no/ChallengeResponseAuthentication yes/g' /etc/ssh/sshd_config    
-  #       service ssh restart
-  #     SHELL
-  #     # node.vm.provision "shell", path: "install_common.sh"
-  #     # node.vm.provision "shell", path:"configure-worker-nodes.sh"
-  #   end
-  # end
-# end
 
 
