@@ -12,8 +12,8 @@ Vagrant.configure("2") do |config|
   config.vm.box = IMAGE_NAME
 
   boxes = [
-    { :name => "master",  :ippublic => PUBLIC_MASTER_IP, :ipprivate => PRIVATE_MASTER_IP, :cpus => 2, :memory => 2048 },
-    { :name => "node-01", :ippublic => PUBLIC_NODE_01_IP, :ipprivate => PRIVATE_NODE_01_IP, :cpus => 1, :memory => 2048 },
+    { :name => "master",  :ippublic => PUBLIC_MASTER_IP, :ipprivate => PRIVATE_MASTER_IP, :cpus => 2, :memory => 4096, :disksize => '80GB' },
+    { :name => "node-01", :ippublic => PUBLIC_NODE_01_IP, :ipprivate => PRIVATE_NODE_01_IP, :cpus => 1, :memory => 4096, :disksize => '80GB' },
   ]
 
   boxes.each do |opts|
